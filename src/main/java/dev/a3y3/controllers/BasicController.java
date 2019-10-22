@@ -1,13 +1,15 @@
 package dev.a3y3.controllers;
 
 import com.opencsv.CSVReader;
-import dev.a3y3.Constants;
+import dev.a3y3.controllers.resources.Constants;
+import dev.a3y3.controllers.resources.ResultHolder;
 import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
 
 import java.io.*;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ public class BasicController {
     @GetMapping("/")
     public String index(@RequestParam(name = "fileName", required = false, defaultValue
             = "normal.csv") String fileName, Model model) throws IOException {
-        List<String[]> results = new ArrayList<>();
+        List<ResultHolder> results = new ArrayList<>();
         model.addAttribute("fileName", fileName);
         model.addAttribute("results", results);
 
@@ -48,13 +50,13 @@ public class BasicController {
         return reader.readAll();
     }
 
-    private void fillResults(List<String[]> results, List<String[]> rows) {
+    private void fillResults(List<ResultHolder> results, List<String[]> rows) {
         for (int i = 1; i < rows.size() - 1; i++) {
             for (int j = i + 1; j < rows.size(); j++) {
                 String[] row1 = rows.get(i);
                 String[] row2 = rows.get(j);
                 if (isPossibleDuplicate(row1, row2)) {
-                    results.add(row1);
+                    results.add(new ResultHolder(row1, row2));
                 }
             }
         }
@@ -79,19 +81,20 @@ public class BasicController {
         //now, rowsOfFirst[Constants.OFFSET_xxx] will refer to the appropriate column.
 
         //Assume for now that both the lengths are the same.
+        double weightedAverage = 0;
         for (int i = 1; i < row1.length; i++) {
             String column = constants.columnNames[i];
-            int threshold = constants.thresholds.get(column);
 
             //Variables value1 and value2 denote the values of the respective columns.
             String value1 = row1[i];
             String value2 = row2[i];
-            if (isMetaphoneEqual(value1, value2) || getLevenshteinDistance(value1,
-                    value2) <= threshold) {
-                return true;
-            }
+
+            int distance = getLevenshteinDistance(value1, value2);
+            int priority = constants.priorities.get(column);
+            weightedAverage += priority * distance;
         }
-        return false;
+        weightedAverage /= constants.PRIORITY_SUM;
+        return weightedAverage <= 1.5;
     }
 
     /**

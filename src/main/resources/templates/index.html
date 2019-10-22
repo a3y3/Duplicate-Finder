@@ -8,9 +8,11 @@
 <h2 th:text="'Working on ' + ${fileName}"></h2>
     <ul>
         <li th:each="result: ${results}">
-            <span th:each="r: ${result}">
-                <span th:text="${r} +', '"></span>
-            </span>
+            <p th:each="r: ${result}">
+                <span th:text="${r.duplicate1}"></span>
+                <br>
+                <span th:text="${r.duplicate2}"></span>
+            </p>
         </li>
     </ul>
 </body>
