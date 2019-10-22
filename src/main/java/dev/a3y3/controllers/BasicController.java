@@ -58,7 +58,7 @@ public class BasicController {
     }
 
     /**
-     * Fills the {@code results} list by calling the appropriate functions.
+     * Fills the {@code results} and {@code nonDuplicates} list by calling the appropriate functions.
      *
      * @param results       the results list that is to be displayed
      * @param nonDuplicates the list that is to be filled with rows that are verified
@@ -87,11 +87,10 @@ public class BasicController {
     /**
      * Checks if rows row1 and row2 are a possible duplicate of each other.
      * The function checks for all the columns in {@code row1} with the matching column
-     * of {@code row2}. It determines that the entire row is a possible duplicate iff:
+     * of {@code row2}. It uses a weighted average of all columns and determines that the
+     * row is a possible duplicate iff:
      * <p>
-     * 1. The LevenshteinDistance between them is less than or equal to the
-     * threshold for the particular column (defined in Constants.java):
-     * {@see int getLevenshteinDistance(String str1, String str2)}
+     * 1. The weighted average is less than a threshold, specified in Constants.THRESHOLD
      * [REMOVED]: 2. They are Metaphones of each other:
      * {@see boolean isMetaphoneEqual(String str1, String str2)}
      *
