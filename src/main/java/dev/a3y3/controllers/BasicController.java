@@ -13,9 +13,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
+ * Controller for index. Has methods that process data inside a CSV file and return it
+ * for displaying it.
+ *
  * @author Soham Dongargaonkar [sd4324] on 10/21/19
  */
 @Controller
@@ -28,11 +33,13 @@ public class BasicController {
     public String index(@RequestParam(name = "fileName", required = false, defaultValue
             = "normal.csv") String fileName, Model model) throws IOException {
         List<ResultHolder> results = new ArrayList<>();
+        List<String[]> nonDuplicates = new ArrayList<>();
         model.addAttribute("fileName", fileName);
         model.addAttribute("results", results);
+        model.addAttribute("nonDuplicates", nonDuplicates);
 
         List<String[]> fileRows = getFileRows(fileName);
-        fillResults(results, fileRows);
+        fillResults(results, nonDuplicates, fileRows);
         return "index";
     }
 
@@ -50,14 +57,29 @@ public class BasicController {
         return reader.readAll();
     }
 
-    private void fillResults(List<ResultHolder> results, List<String[]> rows) {
+    /**
+     * Fills the {@code results} list by calling the appropriate functions.
+     *
+     * @param results       the results list that is to be displayed
+     * @param nonDuplicates the list that is to be filled with rows that are verified
+     *                      to not be duplicates.
+     * @param rows          the rows as read from the CSV file.
+     */
+    private void fillResults(List<ResultHolder> results, List<String[]> nonDuplicates,
+                             List<String[]> rows) {
+        Set<String[]> duplicateSet = new HashSet<>();
         for (int i = 1; i < rows.size() - 1; i++) {
+            String[] row1 = rows.get(i);
             for (int j = i + 1; j < rows.size(); j++) {
-                String[] row1 = rows.get(i);
                 String[] row2 = rows.get(j);
                 if (isPossibleDuplicate(row1, row2)) {
+                    duplicateSet.add(row1);
+                    duplicateSet.add(row2);
                     results.add(new ResultHolder(row1, row2));
                 }
+            }
+            if (!duplicateSet.contains(row1)) {
+                nonDuplicates.add(row1);
             }
         }
     }
@@ -70,7 +92,7 @@ public class BasicController {
      * 1. The LevenshteinDistance between them is less than or equal to the
      * threshold for the particular column (defined in Constants.java):
      * {@see int getLevenshteinDistance(String str1, String str2)}
-     * 2. They are Metaphones of each other:
+     * [REMOVED]: 2. They are Metaphones of each other:
      * {@see boolean isMetaphoneEqual(String str1, String str2)}
      *
      * @param row1 the String representation (comma separated) of a row.
@@ -94,7 +116,7 @@ public class BasicController {
             weightedAverage += priority * distance;
         }
         weightedAverage /= constants.PRIORITY_SUM;
-        return weightedAverage <= 1.5;
+        return weightedAverage <= constants.THRESHOLD;
     }
 
     /**
