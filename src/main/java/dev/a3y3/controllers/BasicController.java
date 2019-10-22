@@ -1,5 +1,6 @@
 package dev.a3y3.controllers;
 
+import com.opencsv.CSVReader;
 import dev.a3y3.Constants;
 import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -24,11 +25,11 @@ public class BasicController {
     @GetMapping("/")
     public String index(@RequestParam(name = "fileName", required = false, defaultValue
             = "normal.csv") String fileName, Model model) throws IOException {
-        List<String> results = new ArrayList<>();
+        List<String[]> results = new ArrayList<>();
         model.addAttribute("fileName", fileName);
         model.addAttribute("results", results);
 
-        List<String> fileRows = getFileRows(fileName);
+        List<String[]> fileRows = getFileRows(fileName);
         fillResults(results, fileRows);
         return "index";
     }
@@ -39,26 +40,22 @@ public class BasicController {
      * on the file directly.
      *
      * @param fileName the name of the file.
-     * @return a {@code List<String>} containing the rows from the file.
-     * @throws IOException by BufferedReader.
+     * @return a {@code List<String[]>} containing the rows from the file.
+     * @throws IOException by {@code reader.readAll()}.
      */
-    private List<String> getFileRows(String fileName) throws IOException {
-        BufferedReader in =
-                new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
-        List<String> rows = new ArrayList<>();
-        String row;
-        while ((row = in.readLine()) != null) {
-            rows.add(row);
-        }
-        return rows;
+    private List<String[]> getFileRows(String fileName) throws IOException {
+        CSVReader reader = new CSVReader(new FileReader(fileName));
+        return reader.readAll();
     }
 
-    private void fillResults(List<String> result, List<String> rows) {
-        for (int i = 0; i < rows.size() - 1; i++) {
+    private void fillResults(List<String[]> results, List<String[]> rows) {
+        for (int i = 1; i < rows.size() - 1; i++) {
             for (int j = i + 1; j < rows.size(); j++) {
-                String row1 = rows.get(i);
-                String row2 = rows.get(j);
-
+                String[] row1 = rows.get(i);
+                String[] row2 = rows.get(j);
+                if (isPossibleDuplicate(row1, row2)) {
+                    results.add(row1);
+                }
             }
         }
     }
@@ -78,19 +75,17 @@ public class BasicController {
      * @param row2 the String representation (comma separated) of a row.
      * @return true if {@code row1} is a possible duplicate of {@code row2}.
      */
-    private boolean isPossibleDuplicate(String row1, String row2) {
-        String[] colsOfFirst = row1.split(",");
-        String[] colsOfSecond = row2.split(",");
+    private boolean isPossibleDuplicate(String[] row1, String[] row2) {
         //now, rowsOfFirst[Constants.OFFSET_xxx] will refer to the appropriate column.
 
         //Assume for now that both the lengths are the same.
-        for (int i = 1; i < colsOfFirst.length; i++) {
+        for (int i = 1; i < row1.length; i++) {
             String column = constants.columnNames[i];
             int threshold = constants.thresholds.get(column);
 
             //Variables value1 and value2 denote the values of the respective columns.
-            String value1 = colsOfFirst[i];
-            String value2 = colsOfSecond[i];
+            String value1 = row1[i];
+            String value2 = row2[i];
             if (isMetaphoneEqual(value1, value2) || getLevenshteinDistance(value1,
                     value2) <= threshold) {
                 return true;
@@ -99,10 +94,16 @@ public class BasicController {
         return false;
     }
 
+    /**
+     * @return the Levenshtein Distance between {@code str1} and {@code str2}.
+     */
     private int getLevenshteinDistance(String str1, String str2) {
         return levenshteinDistance.apply(str1, str2);
     }
 
+    /**
+     * @return true if {@code str1} is metaphonically equal to {@code str2}.
+     */
     private boolean isMetaphoneEqual(String str1, String str2) {
         str1 = metaphone.encode(str1);
         str2 = metaphone.encode(str2);
