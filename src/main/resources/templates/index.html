@@ -6,6 +6,8 @@
 </head>
 <body>
 <h2 th:text="'Working on ' + ${fileName}"></h2>
- 
+    <ul>
+        <li th:each="result: ${results}"><p th:text="${result}"></p></li>
+    </ul>
 </body>
 </html>
