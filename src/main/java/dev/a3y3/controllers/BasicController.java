@@ -1,5 +1,6 @@
 package dev.a3y3.controllers;
 
+import dev.a3y3.Constants;
 import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,8 @@ import java.util.List;
  */
 @Controller
 public class BasicController {
+
+
 
     @GetMapping("/")
     public String index(@RequestParam(name = "fileName", required = false, defaultValue
@@ -47,5 +50,13 @@ public class BasicController {
             rows.add(row);
         }
         return rows;
+    }
+
+    private int getLevenshteinDistance(String a, String b){
+        return 0;
+    }
+
+    private boolean isMetaphoneEqual(String str1, String str2){
+        return false;
     }
 }
