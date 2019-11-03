@@ -38,9 +38,24 @@
         </dependency>
     </dependencies>
 
+		<build>
+		 <plugins>
+		    <plugin>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-maven-plugin</artifactId>
+	        <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>dev.a3y3.DuplicateFinder</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+				</plugin>
+		 </plugins>
+		</build>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.a3y3</groupId>
     <artifactId>main-app</artifactId>
-    <version>0.0.1.ALPHA</version>
+    <version>1.0</version>
 </project>
