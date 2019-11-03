@@ -3,10 +3,13 @@ Given a CSV file, this application finds all _possible duplicate_ records in it.
 
 ### Example
 Amongst all records in `normal.csv`, two records look like this:
-- 4,Kale,Gipp,Klein Group,kgipp3@360.cn,4985 Menomonie Drive,,94975,Petaluma,California,CA,707-840-2551
-- 4,Kale,Gipp,The Klein Group,kgippp3@360.cn,4985 Menomonie Drive,,94975,Petaluma,California,CA,707-840-2551
 
-They're not exact duplicates, but are correctly found and flagged by the application.
+|id|first_name|last_name|company|email|address1|address2|zip|city|state_long|state|phone
+|---|---|---|---|---|---|---|---|---|---|---|---|
+|4|Kale|Gipp|**Klein Group**|**kgipp3@360.cn**|4985 Menomonie Drive| |94975,Petaluma|California|CA|707-840-2551
+|4|Kale|Gipp|**The Klein Group**|**kgippp3@370.cn**|4985 Menomonie Drive| |94975,Petaluma|California|CA|707-840-2551
+
+They're not exact duplicates (**company name** and **email IDs** differ, say because of a typo), but are correctly found and flagged by the application.
 
 ## Setup
 ### How to build
